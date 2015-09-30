@@ -34,9 +34,6 @@ class ShortUrlWebService(object):
     def POST(self):
         data = cherrypy.request.json;
 
-        print "data is"
-        print data["longUrl"]
-
         """
             does the long url already exist?
         """
@@ -45,7 +42,7 @@ class ShortUrlWebService(object):
                           [data["longUrl"]])
             thisShortUrl = r.fetchone();
             if thisShortUrl != None:
-                return {"shortUrl": thisShortUrl[0]}
+                return {"shortUrl": BASE_HOST_NAME + thisShortUrl[0]}
 
         """
             no, so hash the long url and base 36 encode it
@@ -54,15 +51,21 @@ class ShortUrlWebService(object):
         with sqlite3.connect(DB_STRING) as c:
             c.execute("insert into short_urls values (?, ?)",
                       [data["longUrl"], shortUrl])
-        return {"shortUrl": shortUrl}
+        return {"shortUrl": BASE_HOST_NAME + shortUrl}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.popargs('generator')
     def DELETE(self, generator):
         with sqlite3.connect(DB_STRING) as c:
-            c.execute("delete from short_urls where short_url=?",
-                      [generator])
+            rowCount = c.execute("delete from short_urls where short_url=?",
+                      [generator]).rowcount
+
+        if rowCount > 0:
+            return {"status": "deleted"}
+        else:
+            return {"status": "no match to short url"}
+
 
 def setup_database():
     """
@@ -104,13 +107,14 @@ if __name__ == '__main__':
             'tools.response_headers.on': True,
             'tools.response_headers.headers': [('Content-Type', 'text/plain')],
         },
-        '/static': {
+        '/css': {
             'tools.staticdir.on': True,
-            'tools.staticdir.dir': './public'
+            'tools.staticdir.dir': './css'
         }
     }
     cherrypy.engine.subscribe('start', setup_database)
 
 webapp = ShortUrlGenerator()
 webapp.generator = ShortUrlWebService()
+cherrypy.config.update({'server.socket_host': '0.0.0.0'})
 cherrypy.quickstart(webapp, '/', conf)

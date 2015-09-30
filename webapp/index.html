@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
    <head>
-     <link href="style.css" rel="stylesheet">
+     <link href="/css/style.css" rel="stylesheet">
      <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
      <script type="text/javascript">
        $(document).ready(function() {
 
-         $("#generate-string").click(function(e) {
+         $("#generate-url").click(function(e) {
            $.post("/generator", {"length": $("input[name='length']").val()})
             .done(function(string) {
                $("#the-string").show();
@@ -15,7 +15,7 @@
            e.preventDefault();
          });
 
-         $("#replace-string").click(function(e) {
+         $("#get-url").click(function(e) {
            $.ajax({
               type: "PUT",
               url: "/generator",
@@ -27,7 +27,7 @@
            e.preventDefault();
          });
 
-         $("#delete-string").click(function(e) {
+         $("#delete-url").click(function(e) {
            $.ajax({
               type: "DELETE",
               url: "/generator"
@@ -43,11 +43,11 @@
    </head>
    <body>
      <input type="text" value="8" name="length" />
-     <button id="generate-string">Give it now!</button>
+     <button id="generate-url">Generate a URL from the input below</button>
      <div id="the-string">
          <input type="text" />
-         <button id="replace-string">Replace</button>
-         <button id="delete-string">Delete it</button>
+         <button id="get-url">Get a URL for a short URL</button>
+         <button id="delete-url">Delete URL</button>
      </div>
    </body>
 </html>
