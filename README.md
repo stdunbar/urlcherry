@@ -16,7 +16,9 @@ Then, run something like:
 
 ## Interacting with the web service
 The web service follows a basic REST pattern, using GET, POST, and DELETE.
-The base URL will look like http://www.mysite.com/api
+The base URL will look like http://www.mysite.com/api.  Note that if you're
+using the docker container above you will want to use a URL that would be
+http://localhost:9090/api as the base.
 
 * POST - Start by POST'ing a long URL to get the short URL back.  The POST should 
 contain a JSON object that looks like:
