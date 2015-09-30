@@ -69,7 +69,6 @@ by using a proxy.  My Apache config file looks like:
 
 ```
 <VirtualHost *:80>
-    ServerAdmin scott@xigole.com
     DocumentRoot /home/ubuntu/sites/myhostname.tld
     ServerName myhostname.tld
 
