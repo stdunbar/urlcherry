@@ -48,9 +48,9 @@ class ShortUrlWebService(object):
                 return {"shortUrl": BASE_HOST_NAME + "api/" + thisShortUrl[0]}
 
         """
-            no, so hash the long url and base 36 encode it
+            no, so hash the long url and base 62 encode it
         """
-        shortUrl = encodeBase36(hash(data["longUrl"]))
+        shortUrl = base62encode(hash(data["longUrl"]))
         with sqlite3.connect(DB_STRING) as c:
             c.execute("insert into short_urls values (?, ?)",
                       [data["longUrl"], shortUrl])
@@ -79,21 +79,28 @@ def setup_database():
     with sqlite3.connect(DB_STRING) as con:
         con.execute("create table if not exists short_urls (long_url, short_url)")
 
-ALPHABET = "0123456789bcdfghjklmnpqrstvwxyz"
 
-def encodeBase36(n):
-    if n == 0:
-        return ALPHABET[0]
+def base62encode(number, alphabet='0123456789abcdefghjklmnpqrstvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'):
+    """Converts an integer to a base62 string."""
 
-    n = abs(n);
+    if not isinstance(number, (int, long)):
+        raise TypeError('number must be an integer')
 
-    result = ""
+    base62 = ''
+    sign = ''
 
-    while (n > 0):
-        result = ALPHABET[n % len(ALPHABET)] + result
-        n /= len(ALPHABET)
+    if number < 0:
+        sign = '-'
+        number = -number
 
-    return result
+    if 0 <= number < len(alphabet):
+        return sign + alphabet[number]
+
+    while number != 0:
+        number, i = divmod(number, len(alphabet))
+        base62 = alphabet[i] + base62
+
+    return sign + base62
 
 if __name__ == '__main__':
     conf = {
