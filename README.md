@@ -54,7 +54,7 @@ found then you'll get back a "204" - "No Content".
 Since this code could run on any domain, the "http://www.thesite.tld" portion
 can be configured to your environment.  For local testing it will likely
 be set to "http://localhost:8080".  But, if you wanted to host this service
-on, for example, "http://blah.io", change the "BASE_HOST_NAME" variable at the
+on, for example, "http://blah.tld", change the "BASE_HOST_NAME" variable at the
 top of the server.py file.
 
 ## Hosting Considerations
