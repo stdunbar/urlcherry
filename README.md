@@ -17,7 +17,7 @@ Then, run something like:
 
 ## Interacting with the web service
 The web service follows a basic REST pattern, using GET, POST, and DELETE.
-The base URL will look like http://www.mysite.com/api.  Note that if you're
+The base URL will look like http://www.thesite.tld/api.  Note that if you're
 using the docker container above you will want to use a URL that would be
 http://localhost:9090/api as the base.
 
@@ -29,12 +29,12 @@ contain a JSON object that looks like:
 Note that the service is not expecting any other URL parameters.  This method
 returns a JSON object that contains the short URL:
 
-`{"shortUrl": "http://www.mysite.com/api/4h38dgg4qh2nf"}`
+`{"shortUrl": "http://www.thesite.tld/api/4h38dgg4qh2nf"}`
 
 * GET - Use the GET method in the /api namespace to get the long URL
 from the short one.  The URL will be look like:
 
-`http://www.mysite.com/api/4h38dgg4qh2nf`
+`http://www.thesite.tld/api/4h38dgg4qh2nf`
 
 where the last part of the URL is the encoded section of the short URL.
 This will redirect you to the long URL.
@@ -42,7 +42,7 @@ This will redirect you to the long URL.
 * DELETE - If you no longer need your short url you can delete it.  Use
 the DELETE method and call:
 
-`http://www.mysite.com/api/4h38dgg4qh2nf`
+`http://www.thesite.tld/api/4h38dgg4qh2nf`
 
 You will get back an HTTP status code depending on the result of the
 delete.  If the short URL portion can be found then you'll get back an
@@ -51,7 +51,7 @@ found your code and deleted it.  If the short URL portion cannot be
 found then you'll get back a "204" - "No Content".
 
 ## Configuration
-Since this code could run on any domain, the "http://www.mysite.com" portion
+Since this code could run on any domain, the "http://www.thesite.tld" portion
 can be configured to your environment.  For local testing it will likely
 be set to "http://localhost:8080".  But, if you wanted to host this service
 on, for example, "http://blah.io", change the "BASE_HOST_NAME" variable at the
