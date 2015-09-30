@@ -7,7 +7,7 @@ import time
 import cherrypy
 
 DB_STRING = "url.db"
-BASE_HOST_NAME = "http://www.mysite.com/"
+BASE_HOST_NAME = "http://localhost:8080/"
 
 class ShortUrlGenerator(object):
    @cherrypy.expose
@@ -19,13 +19,16 @@ class ShortUrlWebService(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    @cherrypy.popargs('generator')
-    def GET(self, generator):
+    @cherrypy.popargs('api')
+    def GET(self, api):
 
         with sqlite3.connect(DB_STRING) as c:
-            r = c.execute("select long_url from short_urls where short_url = ?", [generator])
+            r = c.execute("select long_url from short_urls where short_url = ?", [api])
             longUrl = r.fetchone()
-            return {"longUrl": longUrl[0]}
+            if longUrl != None:
+                raise cherrypy.HTTPRedirect( longUrl );
+            else:
+                raise cherrypy.HTTPError( 404 );
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -42,7 +45,7 @@ class ShortUrlWebService(object):
                           [data["longUrl"]])
             thisShortUrl = r.fetchone();
             if thisShortUrl != None:
-                return {"shortUrl": BASE_HOST_NAME + thisShortUrl[0]}
+                return {"shortUrl": BASE_HOST_NAME + "api/" + thisShortUrl[0]}
 
         """
             no, so hash the long url and base 36 encode it
@@ -51,20 +54,20 @@ class ShortUrlWebService(object):
         with sqlite3.connect(DB_STRING) as c:
             c.execute("insert into short_urls values (?, ?)",
                       [data["longUrl"], shortUrl])
-        return {"shortUrl": BASE_HOST_NAME + shortUrl}
+        return {"shortUrl": BASE_HOST_NAME + "api/" + shortUrl}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    @cherrypy.popargs('generator')
-    def DELETE(self, generator):
+    @cherrypy.popargs('api')
+    def DELETE(self, api):
         with sqlite3.connect(DB_STRING) as c:
             rowCount = c.execute("delete from short_urls where short_url=?",
-                      [generator]).rowcount
+                      [api]).rowcount
 
         if rowCount > 0:
-            return {"status": "deleted"}
+            cherrypy.response.status = '202'
         else:
-            return {"status": "no match to short url"}
+            cherrypy.response.status = '204'
 
 
 def setup_database():
@@ -82,11 +85,7 @@ def encodeBase36(n):
     if n == 0:
         return ALPHABET[0]
 
-    # We're only dealing with nonnegative integers.
-
-    if n < 0:
-        raise Exception() # Raise a better exception than this in real life.
-
+    n = abs(n);
 
     result = ""
 
@@ -102,19 +101,15 @@ if __name__ == '__main__':
             'tools.sessions.on': True,
             'tools.staticdir.root': os.path.abspath(os.getcwd())
         },
-        '/generator': {
+        '/api': {
             'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
             'tools.response_headers.on': True,
             'tools.response_headers.headers': [('Content-Type', 'text/plain')],
-        },
-        '/css': {
-            'tools.staticdir.on': True,
-            'tools.staticdir.dir': './css'
         }
     }
     cherrypy.engine.subscribe('start', setup_database)
 
 webapp = ShortUrlGenerator()
-webapp.generator = ShortUrlWebService()
+webapp.api = ShortUrlWebService()
 cherrypy.config.update({'server.socket_host': '0.0.0.0'})
 cherrypy.quickstart(webapp, '/', conf)
